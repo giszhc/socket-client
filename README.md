@@ -18,6 +18,14 @@
 
 ---
 
+## 在线示例
+
+我们提供了一个功能完整的在线演示页面，您可以直接在浏览器中体验所有功能：
+
+**🌐 立即体验：** [点击访问在线演示](https://giszhc.github.io/socket-client/example/parent.html)
+
+---
+
 ## 安装
 
 ```bash
@@ -68,6 +76,31 @@ client.on('MESSAGE', (data) => {
 // 发送消息
 client.sendMessage('CHAT', { text: 'Hello' });
 ```
+
+---
+
+## 📖 示例
+
+我们提供了完整的示例代码，帮助你快速上手：
+
+### 在线示例
+
+**🌐 立即体验：** [访问示例页面](./example/parent.html)
+
+### 运行本地示例
+
+```bash
+# 1. 安装依赖
+npm install ws
+
+# 2. 启动 WebSocket 服务器
+node example/server.js
+
+# 3. 在浏览器中打开
+open example/parent.html
+```
+
+详细文档请查看：[Example README](./example/README.md)
 
 ---
 

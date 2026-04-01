@@ -281,6 +281,53 @@
         border-radius: 4px;
         font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
       }
+
+      .config-section {
+        padding: 16px 20px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .config-row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .config-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #495057;
+        min-width: 100px;
+      }
+
+      .config-input {
+        flex: 1;
+        padding: 10px 14px;
+        border: 1px solid #ced4da;
+        border-radius: 8px;
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+
+      .config-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .config-input::placeholder {
+        color: #adb5bd;
+      }
+
+      .btn-small {
+        padding: 8px 16px;
+        font-size: 12px;
+      }
     </style>
   </head>
   <body>
@@ -297,6 +344,32 @@
         本示例需要 WebSocket 服务端支持。你可以使用以下任一方式：
         <br>• 运行 <code>node example/server.js</code> 启动本地测试服务器
         <br>• 连接到任意 WebSocket 服务器（如：ws://localhost:8080）
+      </div>
+
+      <div class="config-section">
+        <div class="config-row">
+          <label class="config-label" for="ws-url-input">WebSocket 地址:</label>
+          <input 
+            type="text" 
+            class="config-input" 
+            id="ws-url-input"
+            placeholder="ws://localhost:8080"
+            value="ws://localhost:8080"
+          />
+          <button class="btn btn-primary btn-small" onclick="saveWsConfig()">
+            💾 保存
+          </button>
+        </div>
+        <div class="config-row">
+          <label class="config-label" for="namespace-input">命名空间:</label>
+          <input 
+            type="text" 
+            class="config-input" 
+            id="namespace-input"
+            placeholder="chat-demo:v1"
+            value="chat-demo:v1"
+          />
+        </div>
       </div>
 
       <div class="status-bar">
@@ -353,8 +426,8 @@
       import { SocketClient } from '../src/index.ts';
 
       let client = null;
-      const WS_URL = 'ws://localhost:8080'; // WebSocket 服务器地址
-      const NAMESPACE = 'chat-demo:v1';
+      let WS_URL = localStorage.getItem('ws_url') || 'ws://localhost:8080'; // WebSocket 服务器地址
+      let NAMESPACE = localStorage.getItem('ws_namespace') || 'chat-demo:v1';
 
       const chatBody = document.getElementById('chat-body');
       const messageInput = document.getElementById('message-input');
@@ -365,6 +438,12 @@
       const joinBtn = document.getElementById('join-btn');
       const statusDot = document.getElementById('status-dot');
       const statusText = document.getElementById('status-text');
+      const wsUrlInput = document.getElementById('ws-url-input');
+      const namespaceInput = document.getElementById('namespace-input');
+
+      // 初始化输入框值
+      wsUrlInput.value = WS_URL;
+      namespaceInput.value = NAMESPACE;
 
       function getTime() {
         const now = new Date();
@@ -411,6 +490,44 @@
         disconnectBtn.disabled = !isConnected;
         pingBtn.disabled = !isConnected;
         joinBtn.disabled = !isConnected;
+        
+        // 连接时禁用配置输入
+        wsUrlInput.disabled = isConnected;
+        namespaceInput.disabled = isConnected;
+      }
+
+      function saveWsConfig() {
+        const newUrl = wsUrlInput.value.trim();
+        const newNamespace = namespaceInput.value.trim();
+        
+        if (!newUrl) {
+          addMessage('ERROR', 'WebSocket 地址不能为空', false);
+          return;
+        }
+        
+        if (!newNamespace) {
+          addMessage('ERROR', '命名空间不能为空', false);
+          return;
+        }
+        
+        // 验证 WebSocket URL 格式
+        if (!newUrl.startsWith('ws://') && !newUrl.startsWith('wss://')) {
+          addMessage('WARNING', 'WebSocket 地址应该以 ws:// 或 wss:// 开头', false);
+        }
+        
+        WS_URL = newUrl;
+        NAMESPACE = newNamespace;
+        
+        // 保存到 localStorage
+        localStorage.setItem('ws_url', WS_URL);
+        localStorage.setItem('ws_namespace', NAMESPACE);
+        
+        addMessage('SYSTEM', `配置已保存：${WS_URL} (Namespace: ${NAMESPACE})`, false);
+        
+        // 如果当前已连接，提示需要重新连接
+        if (client && client.isConnected()) {
+          addMessage('SYSTEM', '⚠️ 配置已更新，请断开连接后重新连接以应用新配置', false);
+        }
       }
 
       function connectServer() {
@@ -520,6 +637,7 @@
       window.disconnectServer = disconnectServer;
       window.sendPing = sendPing;
       window.joinRoom = joinRoom;
+      window.saveWsConfig = saveWsConfig;
     </script>
   </body>
 </html>

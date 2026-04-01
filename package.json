@@ -1,9 +1,9 @@
 {
-  "name": "@giszhc/iframe-client",
-  "version": "0.0.5",
+  "name": "@giszhc/socket-client",
+  "version": "0.0.1",
   "type": "module",
-  "main": "dist/iframe-client.umd.cjs",
-  "module": "dist/iframe-client.js",
+  "main": "dist/socket-client.umd.cjs",
+  "module": "dist/socket-client.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist",
@@ -20,21 +20,21 @@
     "vite": "^5.4.2"
   },
   "keywords": [
-    "iframe",
+    "socket",
     "client",
     "communication",
     "postMessage"
   ],
-  "description": "一个 简单、轻量、专注通信 的 JavaScript / TypeScript 库，用于 iframe 跨域消息传递。",
+  "description": "一个 功能完善、类型安全 的 WebSocket 通信客户端库，用于 浏览器端 WebSocket 连接。",
   "author": "giszhc",
   "license": "MIT",
-  "homepage": "https://github.com/giszhc/iframe-client#readme",
+  "homepage": "https://github.com/giszhc/socket-client#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/giszhc/iframe-client.git"
+    "url": "https://github.com/giszhc/socket-client.git"
   },
   "bugs": {
-    "url": "https://github.com/giszhc/iframe-client/issues"
+    "url": "https://github.com/giszhc/socket-client/issues"
   },
   "publishConfig": {
     "access": "public"
