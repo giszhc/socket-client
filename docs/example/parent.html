@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Socket Client - WebSocket Example</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 40px 20px;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 800px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .header {
+        background: linear-gradient(to bottom, #f6f6f6, #e8e8e8);
+        padding: 20px;
+        border-bottom: 1px solid #d1d1d1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .traffic-light {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+      }
+
+      .traffic-light.close {
+        background: #ff5f57;
+        border: 1px solid #e0443e;
+      }
+
+      .traffic-light.minimize {
+        background: #ffbd2e;
+        border: 1px solid #dea123;
+      }
+
+      .traffic-light.maximize {
+        background: #28c940;
+        border: 1px solid #1aab29;
+      }
+
+      .chat-title {
+        flex: 1;
+        text-align: center;
+        color: #3c3c3c;
+        font-size: 16px;
+        font-weight: 600;
+        margin-right: 44px;
+      }
+
+      .status-bar {
+        padding: 12px 20px;
+        background: #f0f0f0;
+        font-size: 13px;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .status-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #dc3545;
+        transition: background 0.3s;
+      }
+
+      .status-dot.connected {
+        background: #28c940;
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+
+      .chat-body {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background: #f5f5f7;
+        min-height: 400px;
+        max-height: 500px;
+      }
+
+      .message {
+        margin-bottom: 16px;
+        display: flex;
+        animation: slideIn 0.3s ease-out;
+      }
+
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .message.sent {
+        justify-content: flex-end;
+      }
+
+      .message.received {
+        justify-content: flex-start;
+      }
+
+      .message-bubble {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 18px;
+        position: relative;
+      }
+
+      .message.sent .message-bubble {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-bottom-right-radius: 4px;
+      }
+
+      .message.received .message-bubble {
+        background: white;
+        color: #3c3c3c;
+        border-bottom-left-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      }
+
+      .message-type {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+        opacity: 0.8;
+      }
+
+      .message-content {
+        font-size: 14px;
+        line-height: 1.5;
+        word-wrap: break-word;
+      }
+
+      .message-time {
+        font-size: 11px;
+        margin-top: 6px;
+        opacity: 0.6;
+      }
+
+      .chat-input-area {
+        padding: 16px 20px;
+        background: white;
+        border-top: 1px solid #e0e0e0;
+        display: flex;
+        gap: 12px;
+      }
+
+      .input-wrapper {
+        flex: 1;
+        position: relative;
+      }
+
+      .chat-input {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid #e0e0e0;
+        border-radius: 24px;
+        font-size: 14px;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+
+      .chat-input:focus {
+        border-color: #667eea;
+      }
+
+      .control-panel {
+        padding: 16px 20px;
+        background: #f8f9fa;
+        border-top: 1px solid #e0e0e0;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+      }
+
+      .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      .btn-danger {
+        background: linear-gradient(135deg, #ff5f57 0%, #e0443e 100%);
+        color: white;
+      }
+
+      .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(255, 95, 87, 0.4);
+      }
+
+      .btn:active {
+        transform: translateY(0);
+      }
+
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .server-info {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        border-radius: 8px;
+        padding: 16px 20px;
+        margin: 20px;
+        font-size: 13px;
+        color: #856404;
+      }
+
+      .server-info strong {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+      }
+
+      .server-info code {
+        background: rgba(0, 0, 0, 0.05);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: 'SF Mono', 'Monaco', 'Inconsolata', monospace;
+      }
+
+      .config-section {
+        padding: 16px 20px;
+        background: #f8f9fa;
+        border-bottom: 1px solid #e0e0e0;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .config-row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+      }
+
+      .config-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #495057;
+        min-width: 100px;
+      }
+
+      .config-input {
+        flex: 1;
+        padding: 10px 14px;
+        border: 1px solid #ced4da;
+        border-radius: 8px;
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+
+      .config-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .config-input::placeholder {
+        color: #adb5bd;
+      }
+
+      .btn-small {
+        padding: 8px 16px;
+        font-size: 12px;
+      }
+    </style>
+    <script type="module" crossorigin src="../parent.js"></script>
+    <link rel="modulepreload" crossorigin href="../modulepreload-polyfill.B5Qt9EMX.js">
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="traffic-light close"></div>
+        <div class="traffic-light minimize"></div>
+        <div class="traffic-light maximize"></div>
+        <div class="chat-title">💬 Socket Client Demo</div>
+      </div>
+
+      <div class="server-info">
+        <strong>📌 使用说明：</strong>
+        本示例需要 WebSocket 服务端支持。你可以使用以下任一方式：
+        <br>• 运行 <code>node example/server.js</code> 启动本地测试服务器
+        <br>• 连接到任意 WebSocket 服务器（如：ws://localhost:8080）
+      </div>
+
+      <div class="config-section">
+        <div class="config-row">
+          <label class="config-label" for="ws-url-input">WebSocket 地址:</label>
+          <input 
+            type="text" 
+            class="config-input" 
+            id="ws-url-input"
+            placeholder="ws://localhost:8080"
+            value="ws://localhost:8080"
+          />
+          <button class="btn btn-primary btn-small" onclick="saveWsConfig()">
+            💾 保存
+          </button>
+        </div>
+        <div class="config-row">
+          <label class="config-label" for="namespace-input">命名空间:</label>
+          <input 
+            type="text" 
+            class="config-input" 
+            id="namespace-input"
+            placeholder="chat-demo:v1"
+            value="chat-demo:v1"
+          />
+        </div>
+      </div>
+
+      <div class="status-bar">
+        <div class="status-left">
+          <div class="status-dot" id="status-dot"></div>
+          <span id="status-text">未连接</span>
+        </div>
+        <div id="namespace-display">Namespace: chat-demo:v1</div>
+      </div>
+
+      <div class="chat-body" id="chat-body">
+        <div class="message received">
+          <div class="message-bubble">
+            <div class="message-type">SYSTEM</div>
+            <div class="message-content">欢迎使用 Socket Client！请点击"连接服务器"开始通信。</div>
+            <div class="message-time">刚刚</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <div class="input-wrapper">
+          <input 
+            type="text" 
+            class="chat-input" 
+            id="message-input"
+            placeholder="输入消息..."
+            onkeypress="handleKeyPress(event)"
+            disabled
+          />
+        </div>
+        <button class="send-btn" id="send-btn" onclick="sendMessage()" disabled>
+          发送
+        </button>
+      </div>
+
+      <div class="control-panel">
+        <button class="btn btn-primary" id="connect-btn" onclick="connectServer()">
+          🔌 连接服务器
+        </button>
+        <button class="btn btn-danger" id="disconnect-btn" onclick="disconnectServer()" disabled>
+          ❌ 断开连接
+        </button>
+        <button class="btn btn-primary" id="ping-btn" onclick="sendPing()" disabled>
+          📡 Ping
+        </button>
+        <button class="btn btn-primary" id="join-btn" onclick="joinRoom()" disabled>
+          🏠 加入房间
+        </button>
+      </div>
+    </div>
+
+  </body>
+</html>
+
