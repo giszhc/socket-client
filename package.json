@@ -1,6 +1,6 @@
 {
   "name": "@giszhc/socket-client",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "type": "module",
   "main": "dist/socket-client.umd.cjs",
   "module": "dist/socket-client.js",

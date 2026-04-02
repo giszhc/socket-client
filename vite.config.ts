@@ -5,8 +5,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
-      name: 'iframe-client',
-      fileName: 'iframe-client'
+      name: 'socket-client',
+      fileName: 'socket-client'
     },
     rollupOptions: {
       external: [],
@@ -19,7 +19,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@giszhc/iframe-client': resolve(__dirname, 'src/index.ts')
+      '@giszhc/socket-client': resolve(__dirname, 'src/index.ts')
     }
   }
 })
