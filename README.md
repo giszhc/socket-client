@@ -37,6 +37,60 @@ yarn add @giszhc/socket-client
 
 ---
 
+## 🌐 CDN 引入
+
+无需任何构建工具，直接在 HTML 中通过 `<script>` 标签引入，全局变量为 `window.SocketClient`（即 `SocketClient` 类本身）：
+
+### jsDelivr（推荐）
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@giszhc/socket-client@0.0.2/dist-cdn/socket-client.min.js"></script>
+```
+
+### unpkg
+
+```html
+<script src="https://unpkg.com/@giszhc/socket-client@0.0.2/dist-cdn/socket-client.min.js"></script>
+```
+
+> 也可以不带路径直接使用默认入口：`https://unpkg.com/@giszhc/socket-client`（等价于上面的 CDN 产物）。
+> 生产环境建议锁定版本号（`@0.0.2`），避免引入不兼容的更新。
+
+### 使用示例
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@giszhc/socket-client@0.0.2/dist-cdn/socket-client.min.js"></script>
+<script>
+  // 全局变量 SocketClient 直接可用，API 与 npm 方式完全一致
+  const client = new SocketClient({
+    url: 'wss://your-domain.com/socket',
+    namespace: 'my-app:chat:v1',
+
+    onConnect: () => {
+      console.log('已连接');
+      client.sendMessage('JOIN', { roomId: 123 });
+    },
+    onDisconnect: () => {
+      console.log('已断开');
+    },
+    onError: (error) => {
+      console.error('错误:', error);
+    }
+  });
+
+  client.on('MESSAGE', (data) => {
+    console.log('收到消息:', data);
+  });
+
+  // 组件/页面销毁时记得清理
+  // client.destroy();
+</script>
+```
+
+> 注意：通过 CDN 引入为压缩产物，无 TypeScript 类型提示；需要类型支持请使用 npm 安装方式。
+
+---
+
 ## 🚀 快速开始
 
 ### 基本使用

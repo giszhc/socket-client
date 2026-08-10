@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Socket Client - CDN 引入示例</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 720px;
+      margin: 40px auto;
+      padding: 0 16px;
+      color: #1f2328;
+    }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+    .log {
+      background: #f6f8fa;
+      border: 1px solid #e1e4e8;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-top: 16px;
+      font-size: 13px;
+      min-height: 120px;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .ok { color: #1a7f37; }
+    .err { color: #cf222e; }
+  </style>
+</head>
+<body>
+  <h2>🌐 CDN 直接引入演示</h2>
+  <p>本页通过 <code>&lt;script&gt;</code> 引入 <code>dist-cdn/socket-client.min.js</code>，全局变量 <code>window.SocketClient</code> 直接可用。</p>
+  <p>CDN 线上地址示例（发布 npm 后生效）：<br>
+    <code>https://cdn.jsdelivr.net/npm/@giszhc/socket-client@0.0.2/dist-cdn/socket-client.min.js</code>
+  </p>
+  <div class="log" id="log"></div>
+
+  <!--
+    CDN 引入方式（发布到 npm 后可直接替换）：
+    <script src="https://cdn.jsdelivr.net/npm/@giszhc/socket-client@0.0.2/dist-cdn/socket-client.min.js"></script>
+    本地验证使用相对路径：
+  -->
+  <script src="../dist-cdn/socket-client.min.js"></script>
+  <script>
+    const log = document.getElementById('log');
+
+    function print(text, cls) {
+      const line = document.createElement('div');
+      line.className = cls || '';
+      line.textContent = text;
+      log.appendChild(line);
+    }
+
+    // 1. 验证全局变量
+    print('typeof window.SocketClient: ' + typeof window.SocketClient);
+    if (typeof window.SocketClient !== 'function') {
+      print('❌ 加载失败：未找到全局变量 SocketClient', 'err');
+    } else {
+      print('✅ 全局变量 SocketClient 加载成功（类名: ' + window.SocketClient.name + '）', 'ok');
+      print('可用方法: ' + Object.getOwnPropertyNames(window.SocketClient.prototype).join(', '));
+    }
+
+    // 2. 实例化（无服务器时连接会失败，仅验证 API 可用）
+    try {
+      const client = new window.SocketClient({
+        url: 'ws://127.0.0.1:8080',
+        namespace: 'cdn-demo:v1',
+        reconnect: false,
+        onConnect: () => print('✅ onConnect 触发', 'ok'),
+        onError: (e) => print('onError（未启动服务器属正常现象）: ' + e.type),
+        onDisconnect: () => print('onDisconnect 触发')
+      });
+      print('✅ 实例化成功，API 验证通过', 'ok');
+      print('isConnected(): ' + client.isConnected());
+      client.destroy();
+    } catch (e) {
+      print('❌ 实例化失败: ' + e.message, 'err');
+    }
+  </script>
+</body>
+</html>

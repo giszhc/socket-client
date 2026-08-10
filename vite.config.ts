@@ -14,6 +14,8 @@ export default defineConfig({
         globals: {}
       }
     },
+    // 产物文件名固定（lib 模式），直接覆盖写入即可，避免依赖清空目录操作
+    emptyOutDir: false,
     sourcemap: false,
     minify: false
   },

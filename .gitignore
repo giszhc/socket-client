@@ -4,6 +4,7 @@ node_modules/
 
 # Build output
 dist/
+dist-cdn/
 *.local
 
 # IDE
@@ -19,3 +20,6 @@ Thumbs.db
 
 # Test coverage
 coverage/
+
+# WorkBuddy local data
+.workbuddy/

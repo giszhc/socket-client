@@ -67,6 +67,27 @@ node example/server.js
 
 ---
 
+### 4. `cdn.html` - CDN 引入示例
+演示通过 `<script>` 标签直接引入 `dist-cdn/socket-client.min.js` 使用（全局变量 `window.SocketClient`）。
+
+**使用步骤：**
+
+1. **先构建 CDN 产物**
+   ```bash
+   pnpm build:cdn
+   ```
+
+2. **在浏览器中打开 cdn.html**
+   ```bash
+   npx serve .
+   # 访问: http://localhost:3000/example/cdn.html
+   ```
+
+3. **发布 npm 后**，可将页面中的 `<script src="../dist-cdn/socket-client.min.js">`
+   替换为线上 CDN 地址（见 [主 README CDN 章节](../README.md#-cdn-引入)）。
+
+---
+
 ## 🚀 快速开始
 
 ### 步骤 1: 安装依赖
